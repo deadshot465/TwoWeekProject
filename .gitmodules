@@ -1,0 +1,3 @@
+[submodule "Externals/FNA-XNA"]
+	path = Externals/FNA-XNA
+	url = https://github.com/FNA-XNA/FNA.git
