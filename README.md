@@ -1,5 +1,7 @@
 # Two Week Project
 
+[![Build Status](https://travis-ci.com/deadshot465/TwoWeekProject.svg?branch=master)](https://travis-ci.com/github/deadshot465/TwoWeekProject)
+
 A two-week struggling project.
 
 ## Contents
