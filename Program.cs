@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Test
+namespace TwoWeekProject
 {
     public static class Program
     {
