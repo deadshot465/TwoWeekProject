@@ -6,14 +6,27 @@ namespace TwoWeekProject
 {
     public class Game1 : Game
     {
-        GraphicsDeviceManager _graphics;
-        SpriteBatch _spriteBatch;
+        private const int WIDTH = 1024;
+        private const int HEIGHT = 768;
+        private const bool FULL_SCREEN = false;
+        
+        private GraphicsDeviceManager _graphics;
+        private SpriteBatch _spriteBatch;
 
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+
+            _graphics.GraphicsProfile = GraphicsProfile.HiDef;
+            _graphics.IsFullScreen = FULL_SCREEN;
+            _graphics.PreferMultiSampling = true;
+            _graphics.PreferredBackBufferHeight = HEIGHT;
+            _graphics.PreferredBackBufferWidth = WIDTH;
+            _graphics.PreferredDepthStencilFormat = DepthFormat.Depth24;
+            _graphics.SynchronizeWithVerticalRetrace = true;
+            _graphics.ApplyChanges();
         }
 
         protected override void Initialize()
