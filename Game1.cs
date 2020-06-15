@@ -4,16 +4,26 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using TwoWeekProject.Content;
 
 namespace TwoWeekProject
 {
+    public struct STAGE_DATA
+    {
+        public Vector2 pos;
+        public int type;
+        public Texture2D side;
+
+    }
+
+
     public class Game1 : Game
     {
         public const int WIDTH = 1120;
         public const int HEIGHT = 630;
         private const bool FULL_SCREEN = false;
-        
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
@@ -31,23 +41,22 @@ namespace TwoWeekProject
         private float playerSpeed;
         private int fixedPlayerAnimationTimer;
 
-        private Texture2D monster;
-        private Vector2 monsterPos;
-        private int monsterAnimation;
-        private float monsterSpeed;
-        
-        private Texture2D side;
-        private const int upSide = 325;
-        private const int downSide = 375;
-        private Texture2D side2, side3;
+        public STAGE_DATA[] stageData;
 
         private int timer;
         private int score;
-        private int[,] musicData;
+
         private SpriteFont font;
         private Song song;
-        private const int musicDataMax = 30;
-        
+
+        enum STAGE_TYPE
+        {
+            NOTHING,
+            UPSIDE,
+            DOWNSIDE,
+            SPECIAL
+        };
+
 
         private Camera _camera;
 
@@ -70,57 +79,22 @@ namespace TwoWeekProject
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            
-            backGround1Pos = new Vector2(1120 * 0 -500, 0);
-            backGround2Pos = new Vector2(1120 * 1 -500, 0);
-            backGround3Pos = new Vector2(1120 * 2 -500, 0);
+
+            backGround1Pos = new Vector2(1120 * 0 - 500, 0);
+            backGround2Pos = new Vector2(1120 * 1 - 500, 0);
+            backGround3Pos = new Vector2(1120 * 2 - 500, 0);
 
             playerPos = new Vector2(50, 325);
             playerAnimation = 0;
             playerSpeed = 6;
 
-            monsterPos = new Vector2(-400, 275);
-            monsterAnimation = 0;
-            monsterSpeed = 6;
-
-
             score = 100;
-            
 
+            for (int i = 0; i < 64; i++)
+            {
+                SetStageData(stageData[i]);
+            }        
 
-            musicData = new int[musicDataMax, 2]{
-                {700, upSide},//1
-                {800, downSide},//2
-                {900, upSide},//3
-                {0, 0},//4
-                {0, 0},//5
-                {0, 0},//6
-                {1300, upSide},//7
-                {1400, downSide},//8
-                {1500, upSide},//9
-                {1600, downSide},//10
-                {1700, upSide},//1
-                {0, 0},//2
-                {1900, upSide},//3
-                {2000, downSide},//4
-                {2100, upSide},//5
-                {0, 0},//6
-                {0, 0},//7
-                {2400, downSide},//8
-                {2500, upSide},//9
-                {2600, downSide},//10
-                {2700, upSide},//1
-                {2800, downSide},//2
-                {0, 0},//3
-                {0, 0},//4
-                {3100, upSide},//5
-                {0, 0},//6
-                {0, 0},//7
-                {3400, downSide},//8
-                {0, 0},//9
-                {0, 0},//10
-            };
-            
             base.Initialize();
         }
 
@@ -135,11 +109,11 @@ namespace TwoWeekProject
             backGround3 = Content.Load<Texture2D>("background3");
 
             player = Content.Load<Texture2D>("player");
-            monster = Content.Load<Texture2D>("monster1");
 
-            side = Content.Load<Texture2D>("side1");
-            side2 = Content.Load<Texture2D>("side2");
-            side3 = Content.Load<Texture2D>("side3");
+            for (int i = 0; i < 64; i++)
+            {
+                stageData[i].side = Content.Load<Texture2D>("side1");
+            }
 
             font = Content.Load<SpriteFont>("timer");
             song = Content.Load<Song>("test");
@@ -155,11 +129,11 @@ namespace TwoWeekProject
 
             // TODO: Add your update logic here
             if (Keyboard.GetState().IsKeyDown(Keys.R)) Initialize();
-            
-            if (playerPos.X - backGround1Pos.X >= WIDTH + 500) backGround1Pos.X = playerPos.X + WIDTH * 2 - 500; 
+
+            if (playerPos.X - backGround1Pos.X >= WIDTH + 500) backGround1Pos.X = playerPos.X + WIDTH * 2 - 500;
             if (playerPos.X - backGround2Pos.X >= WIDTH + 500) backGround2Pos.X = playerPos.X + WIDTH * 2 - 500;
             if (playerPos.X - backGround3Pos.X >= WIDTH + 500) backGround3Pos.X = playerPos.X + WIDTH * 2 - 500;
-            
+
             if (Keyboard.GetState().IsKeyDown(Keys.Up))
             {
                 playerPos.Y -= 2;
@@ -176,11 +150,11 @@ namespace TwoWeekProject
                 playerSpeed = 4;
             }
 
-            if(playerAnimation == 10)
+            if (playerAnimation == 10)
             {
                 fixedPlayerAnimationTimer--;
 
-                if (fixedPlayerAnimationTimer <= 0) 
+                if (fixedPlayerAnimationTimer <= 0)
                 {
                     playerAnimation = 0;
                     playerSpeed = 6;
@@ -188,11 +162,9 @@ namespace TwoWeekProject
             }
             else if (timer % 10 == 0)
             {
-                    playerAnimation++;
-                    if (playerAnimation == 10) playerAnimation = 0;
+                playerAnimation++;
+                if (playerAnimation == 10) playerAnimation = 0;
 
-                monsterAnimation++; 
-                if (monsterAnimation == 6) monsterAnimation = 0;
             }
 
             if (playerPos.Y <= 300)
@@ -204,24 +176,14 @@ namespace TwoWeekProject
                 playerPos.Y = 375;
             }
 
-
-            //else if ( fixedPlayerTimer >= 30 && fixedPlayerFlag)
-            //{
-            //    playerPos.Y = 350;
-            //    fixedPlayerTimer = 0;
-            //    fixedPlayerFlag = false;
-            //}
-            //fixedPlayerTimer++;
-
-           
-
             playerPos.X += playerSpeed;
-            monsterPos.X += monsterSpeed;
 
             _camera.Follow(playerPos);
 
-            
-
+            if(CheckCollision())
+            {
+                score--;
+            }
 
             base.Update(gameTime);
         }
@@ -235,31 +197,28 @@ namespace TwoWeekProject
             TimeSpan playTime = MediaPlayer.PlayPosition;
             TimeSpan songTime = song.Duration;
 
-            _spriteBatch.Begin(transformMatrix:_camera.Transform);
-            
+            _spriteBatch.Begin(transformMatrix: _camera.Transform);
+
             _spriteBatch.Draw(backGround1, backGround1Pos, new Rectangle(0, 0, 1120, 630), Color.White);
             _spriteBatch.Draw(backGround2, backGround2Pos, new Rectangle(0, 0, 1120, 630), Color.White);
             _spriteBatch.Draw(backGround3, backGround3Pos, new Rectangle(0, 0, 1120, 630), Color.White);
-            for (int i = 0; i < musicDataMax; i++)
+            for (int i = 0; i < 64; i++)
             {
-                if(musicData[i,1] == upSide)
-                    _spriteBatch.Draw(side, new Vector2(musicData[i, 0], upSide), new Rectangle(0, 0, 150, 150), Color.White);
+                if (stageData[i].type == 1 && stageData[i].type == 3)
+                    _spriteBatch.Draw(stageData[i].side, stageData[i].pos, new Rectangle(0, 0, 150, 150), Color.White);
             }
-            _spriteBatch.Draw(side2, new Vector2(1000,325), new Rectangle(0, 0, 150, 150), Color.White);
             _spriteBatch.Draw(player, playerPos, new Rectangle(150 * playerAnimation, 0, 150, 150), Color.White);
-            _spriteBatch.Draw(monster, monsterPos, new Rectangle(350 *monsterAnimation, 0, 350, 150), Color.White,0.0f,new Vector2(0.0f,0.0f),new Vector2(2.0f,2.0f),0,0);
-            _spriteBatch.Draw(side3, new Vector2(1050, 375), new Rectangle(0, 0, 150, 150), Color.White);
-            for (int i = 0; i < musicDataMax; i++)
+            for (int i = 0; i < 64; i++)
             {
-                if (musicData[i, 1] == downSide)
-                    _spriteBatch.Draw(side, new Vector2(musicData[i, 0], downSide), new Rectangle(0, 0, 150, 150), Color.White);
+                if (stageData[i].type == 2)
+                    _spriteBatch.Draw(stageData[i].side, stageData[i].pos, new Rectangle(0, 0, 150, 150), Color.White);
             }
 
             //DEBUG
             _spriteBatch.DrawString(font, "" + timer / 60, new Vector2(playerPos.X, 50), Color.White);
             _spriteBatch.DrawString(font, "" + score, new Vector2(playerPos.X, 100), Color.White);
             _spriteBatch.DrawString(font, GetHumanReaderTime(playTime) + "/" + GetHumanReaderTime(songTime), new Vector2(playerPos.X, 150), Color.White);
-           
+
             _spriteBatch.End();
 
             base.Draw(gameTime);
@@ -274,5 +233,35 @@ namespace TwoWeekProject
             if (seconds < 10) return minutes + ":0" + seconds;
             else return minutes + ":" + seconds;
         }
+
+        public bool CheckCollision()
+        {
+            for (int i = 0; i < 64; i++)
+            {
+                if (playerPos.X - stageData[i].pos.X < 50 && playerPos.X +50 >= stageData[i].pos.X)
+                {
+                    if (stageData[i].type == 1 || stageData[i].type == 2) return true;
+                    if (stageData[i].type == 3 && playerAnimation != 10) return true;
+                }    
+            }
+            return false;
+        }
+
+        public void SetStageData(STAGE_DATA stageData)
+        {
+            Random ran = new Random();
+            
+            for(int i = 0; i < 64; i++)
+            {
+                stageData.type = 2;
+                if (stageData.type == 1) stageData.pos.Y = 325;
+                if (stageData.type == 2) stageData.pos.Y = 375;
+                if (stageData.type == 3) stageData.pos.Y = 350;
+
+                stageData.pos.X = 700 + i * 100;
+            }
+
+        }
+
     }
 }
