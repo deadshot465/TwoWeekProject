@@ -13,7 +13,7 @@ namespace TwoWeekProject.Content
 
         public void Follow(Vector2 pos)
         {
-            Transform = Matrix.CreateTranslation(-pos.X,  0, 0) * Matrix.CreateTranslation(50, 0, 0);
+            Transform = Matrix.CreateTranslation(-pos.X,  0, 0) * Matrix.CreateTranslation(500, 0, 0);
         }
 
 

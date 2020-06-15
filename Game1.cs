@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System;
+using System.Net.Http.Headers;
 using TwoWeekProject.Content;
 
 namespace TwoWeekProject
@@ -27,12 +28,18 @@ namespace TwoWeekProject
         private Texture2D player;
         private Vector2 playerPos;
         private int playerAnimation;
-        private int fixedPlayerTimer;
-        private bool fixedPlayerFlag;
+        private float playerSpeed;
+        private int fixedPlayerAnimationTimer;
+
+        private Texture2D monster;
+        private Vector2 monsterPos;
+        private int monsterAnimation;
+        private float monsterSpeed;
         
         private Texture2D side;
         private const int upSide = 325;
         private const int downSide = 375;
+        private Texture2D side2, side3;
 
         private int timer;
         private int score;
@@ -40,7 +47,7 @@ namespace TwoWeekProject
         private SpriteFont font;
         private Song song;
         private const int musicDataMax = 30;
-        private int speed;
+        
 
         private Camera _camera;
 
@@ -64,18 +71,22 @@ namespace TwoWeekProject
         {
             // TODO: Add your initialization logic here
             
-            backGround1Pos = new Vector2(1120 * 0, 0);
-            backGround2Pos = new Vector2(1120 * 1, 0);
-            backGround3Pos = new Vector2(1120 * 2, 0);
+            backGround1Pos = new Vector2(1120 * 0 -500, 0);
+            backGround2Pos = new Vector2(1120 * 1 -500, 0);
+            backGround3Pos = new Vector2(1120 * 2 -500, 0);
 
-            playerPos = new Vector2(50, 350);
+            playerPos = new Vector2(50, 325);
             playerAnimation = 0;
-            fixedPlayerTimer = 0;
-            fixedPlayerFlag = false;
+            playerSpeed = 6;
+
+            monsterPos = new Vector2(-400, 275);
+            monsterAnimation = 0;
+            monsterSpeed = 6;
 
 
             score = 100;
-            speed = 4;
+            
+
 
             musicData = new int[musicDataMax, 2]{
                 {700, upSide},//1
@@ -124,8 +135,12 @@ namespace TwoWeekProject
             backGround3 = Content.Load<Texture2D>("background3");
 
             player = Content.Load<Texture2D>("player");
-            
+            monster = Content.Load<Texture2D>("monster1");
+
             side = Content.Load<Texture2D>("side1");
+            side2 = Content.Load<Texture2D>("side2");
+            side3 = Content.Load<Texture2D>("side3");
+
             font = Content.Load<SpriteFont>("timer");
             song = Content.Load<Song>("test");
             MediaPlayer.Play(song);
@@ -141,37 +156,67 @@ namespace TwoWeekProject
             // TODO: Add your update logic here
             if (Keyboard.GetState().IsKeyDown(Keys.R)) Initialize();
             
-            if (playerPos.X - backGround1Pos.X >= WIDTH + 150) backGround1Pos.X = playerPos.X + WIDTH * 2 - 150; 
-            if (playerPos.X - backGround2Pos.X >= WIDTH + 150) backGround2Pos.X = playerPos.X + WIDTH * 2 - 150;
-            if (playerPos.X - backGround3Pos.X >= WIDTH + 150) backGround3Pos.X = playerPos.X + WIDTH * 2 - 150;
+            if (playerPos.X - backGround1Pos.X >= WIDTH + 500) backGround1Pos.X = playerPos.X + WIDTH * 2 - 500; 
+            if (playerPos.X - backGround2Pos.X >= WIDTH + 500) backGround2Pos.X = playerPos.X + WIDTH * 2 - 500;
+            if (playerPos.X - backGround3Pos.X >= WIDTH + 500) backGround3Pos.X = playerPos.X + WIDTH * 2 - 500;
             
             if (Keyboard.GetState().IsKeyDown(Keys.Up))
             {
-                playerPos.Y = 325;
-                fixedPlayerTimer = 0;
-                fixedPlayerFlag = true;
+                playerPos.Y -= 2;
             }
             else if (Keyboard.GetState().IsKeyDown(Keys.Down))
             {
-                playerPos.Y = 375;
-                fixedPlayerTimer = 0;
-                fixedPlayerFlag = true;
-            }
-            else if ( fixedPlayerTimer >= 30 && fixedPlayerFlag)
-            {
-                playerPos.Y = 350;
-                fixedPlayerTimer = 0;
-                fixedPlayerFlag = false;
-            }
-            fixedPlayerTimer++;
-            
-            if (timer % 10 == 0)
-            {
-                playerAnimation++;
-                if (playerAnimation == 10) playerAnimation = 0;
+                playerPos.Y += 2;
             }
 
-            playerPos.X += speed;
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                playerAnimation = 10;
+                fixedPlayerAnimationTimer = 20;
+                playerSpeed = 4;
+            }
+
+            if(playerAnimation == 10)
+            {
+                fixedPlayerAnimationTimer--;
+
+                if (fixedPlayerAnimationTimer <= 0) 
+                {
+                    playerAnimation = 0;
+                    playerSpeed = 6;
+                }
+            }
+            else if (timer % 10 == 0)
+            {
+                    playerAnimation++;
+                    if (playerAnimation == 10) playerAnimation = 0;
+
+                monsterAnimation++; 
+                if (monsterAnimation == 6) monsterAnimation = 0;
+            }
+
+            if (playerPos.Y <= 300)
+            {
+                playerPos.Y = 300;
+            }
+            if (playerPos.Y >= 375)
+            {
+                playerPos.Y = 375;
+            }
+
+
+            //else if ( fixedPlayerTimer >= 30 && fixedPlayerFlag)
+            //{
+            //    playerPos.Y = 350;
+            //    fixedPlayerTimer = 0;
+            //    fixedPlayerFlag = false;
+            //}
+            //fixedPlayerTimer++;
+
+           
+
+            playerPos.X += playerSpeed;
+            monsterPos.X += monsterSpeed;
 
             _camera.Follow(playerPos);
 
@@ -200,9 +245,10 @@ namespace TwoWeekProject
                 if(musicData[i,1] == upSide)
                     _spriteBatch.Draw(side, new Vector2(musicData[i, 0], upSide), new Rectangle(0, 0, 150, 150), Color.White);
             }
-
-                _spriteBatch.Draw(player, playerPos, new Rectangle(150 * playerAnimation, 0, 150, 150), Color.White);
-            
+            _spriteBatch.Draw(side2, new Vector2(1000,325), new Rectangle(0, 0, 150, 150), Color.White);
+            _spriteBatch.Draw(player, playerPos, new Rectangle(150 * playerAnimation, 0, 150, 150), Color.White);
+            _spriteBatch.Draw(monster, monsterPos, new Rectangle(350 *monsterAnimation, 0, 350, 150), Color.White,0.0f,new Vector2(0.0f,0.0f),new Vector2(2.0f,2.0f),0,0);
+            _spriteBatch.Draw(side3, new Vector2(1050, 375), new Rectangle(0, 0, 150, 150), Color.White);
             for (int i = 0; i < musicDataMax; i++)
             {
                 if (musicData[i, 1] == downSide)
